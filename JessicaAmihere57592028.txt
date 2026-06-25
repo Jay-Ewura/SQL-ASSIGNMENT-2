@@ -1,0 +1,229 @@
+Jessica Amihere
+57592028
+Cohort B
+
+MariaDB [(none)]> create database EmployeeManagementDB;
+Query OK, 1 row affected (0.010 sec)
+
+MariaDB [(none)]> use EmployeeManagementDB;
+Database changed
+
+MariaDB [EmployeeManagementDB]> create table employee(empNo int not null, fName varchar(100) not null, lName varchar(100), address varchar(100), dob date, sex char, position varchar(100), deptNo int, primary key (empNo));
+Query OK, 0 rows affected (0.086 sec)
+
+MariaDB [EmployeeManagementDB]> create table  department (deptNo int not null, deptName varchar(100) not null, mgrEmpNo int unique, foreign key(mgrEmpNo) references employee(empNo), primary key(deptNo));
+Query OK, 0 rows affected (0.036 sec)
+
+MariaDB [EmployeeManagementDB]> alter table employee add foreign key(deptNo) references department(deptNo);
+Query OK, 0 rows affected (0.067 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+MariaDB [EmployeeManagementDB]> create table project(projNo int not null, projName varchar(100), deptNo int not null, foreign key(deptNo) references department(deptNo), primary key (projNo));
+Query OK, 0 rows affected (0.034 sec)
+
+MariaDB [EmployeeManagementDB]> create table worksOn(empNo int not null, projNo int not null, dateWorked date, hoursWorked decimal, foreign key(empNo) references employee(empNo), foreign key(projNo) references project(projNo), primary key(empNo, ProjNo, dateWorked));
+Query OK, 0 rows affected (0.037 sec)
+
+MariaDB [EmployeeManagementDB]> insert into department values
+    -> (1, 'IT', 1),
+    -> (2, 'Planning', 4),
+    -> (3, 'Finance', 6),
+    -> (4, 'HR', 2),
+    -> (5, 'Marketing', 5),
+    -> (6, 'Operations', 3),
+    -> (7, 'Research', 7),
+    -> (8, 'Legal', 8),
+    -> (9, 'Sales', 9),
+    -> (10, 'Support', 10);
+Query OK, 10 rows affected (0.020 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+MariaDB [EmployeeManagementDB]> insert into employee values
+    -> (1, 'Alice', 'Smith', '12 Oak St', '1985-03-14', 'F', 'Manager', 1),
+    -> (2, 'Bob', 'Jones', '34 Pine Ave', '1990-07-22', 'M', 'Analyst', 1),
+    -> (3, 'Carol', 'White', '56 Elm Rd', '1988-11-05', 'F', 'Software Developer', 2),
+    -> (4, 'David', 'Brown', '78 Maple Dr', '1992-01-30', 'M', 'Team Leader', 2),
+    -> (5, 'Emma', 'Taylor', '90 Birch Ln', '1995-06-18', 'F', 'Analyst', 3),
+    -> (6, 'Frank', 'Davis', '11 Cedar Ct', '1983-09-09', 'M', 'Manager', 3),
+    -> (7, 'Grace', 'Wilson', '22 Walnut Way', '1991-04-25', 'F', 'Software Developer', 1),
+    -> (8, 'Henry', 'Moore', '33 Ash Blvd', '1987-12-12', 'M', 'Analyst', 2),
+    -> (9, 'Isla', 'Clark', '44 Poplar Pl', '1993-08-07', 'F', 'Team Leader', 3),
+    -> (10, 'Jack', 'Lewis', '55 Spruce St', '1996-02-14', 'M', 'Software Developer', 1);
+Query OK, 10 rows affected (0.003 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+MariaDB [EmployeeManagementDB]> insert into project values
+    -> (1, 'SCCS', 1),
+    -> (2, 'Payroll', 2),
+    -> (3, 'BudgetApp', 3),
+    -> (4, 'HRPortal', 4),
+    -> (5, 'AdCampaign', 5),
+    -> (6, 'OpsTracker', 6),
+    -> (7, 'LabSystem', 7),
+    -> (8, 'ComplianceTool', 8),
+    -> (9, 'SalesDash', 9),
+    -> (10, 'HelpDesk', 10);
+Query OK, 10 rows affected (0.022 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+MariaDB [EmployeeManagementDB]> insert into worksOn values
+    -> (1, 1, '2026-01-05', 8),
+    -> (2, 1, '2026-01-06', 6),
+    -> (3, 2, '2026-01-07', 7),
+    -> (4, 2, '2026-01-08', 5),
+    -> (5, 3, '2026-01-09', 8),
+    -> (6, 3, '2026-01-10', 4),
+    -> (7, 4, '2026-01-11', 6),
+    -> (8, 5, '2026-01-12', 7),
+    -> (9, 6, '2026-01-13', 8),
+    -> (10, 7, '2026-01-14', 5);
+Query OK, 10 rows affected (0.023 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+MariaDB [EmployeeManagementDB]>
+MariaDB [EmployeeManagementDB]> set foreign_key_checks = 1;
+Query OK, 0 rows affected (0.000 sec)
+
+7.24
+a)MariaDB [EmployeeManagementDB]> DELIMITER //
+MariaDB [EmployeeManagementDB]> create trigger s_trigger
+    -> before insert on employee
+    -> for each row
+    -> begin
+    -> if new.sex not in ('F', 'M')
+    -> then
+    -> signal sqlstate '45000'
+    -> set message_text = 'Invalid sex entered';
+    -> end if;
+    -> end//
+Query OK, 0 rows affected (0.040 sec)
+
+b)MariaDB [EmployeeManagementDB]> create trigger p_trigger
+    -> before insert on employee
+    -> for each row
+    -> begin
+    -> if new.position not in ('Manager', 'Team leader', 'Analyst', 'Software Developer')
+    -> then
+    -> signal sqlstate '45000'
+    -> set message_text = 'Invalid position entered';
+    -> end if;
+    -> end//
+Query OK, 0 rows affected (0.043 sec)
+
+c)MariaDB [EmployeeManagementDB]> create trigger h_trigger
+    -> before insert on worksOn
+    -> for each row
+    -> begin
+    -> if new.hoursWorked not between 0 and 40
+    -> then
+    -> signal sqlstate '45000'
+    -> set message_text = 'Hours not within range';
+    -> end if;
+    -> end//
+Query OK, 0 rows affected (0.033 sec)
+
+alter table worksOn modify hoursWorked int//
+Query OK, 10 rows affected (0.080 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+7.25
+MariaDB [EmployeeManagementDB]> create view projects_femaleManagers as select e.fname, e.lname, p.projName, p.projNo from employee e, project p, department d where p.deptNo = d.deptNo and d.deptNo = e.deptNo and e.sex = 'F' group by p.projNo;
+Query OK, 0 rows affected (0.054 sec)
+
+MariaDB [EmployeeManagementDB]> select * from projects_femaleManagers;
++-------+--------+-----------+--------+
+| fname | lname  | projName  | projNo |
++-------+--------+-----------+--------+
+| Alice | Smith  | SCCS      |      1 |
+| Carol | White  | Payroll   |      2 |
+| Emma  | Taylor | BudgetApp |      3 |
++-------+--------+-----------+--------+
+3 rows in set (0.029 sec)
+
+7.26
+MariaDB [EmployeeManagementDB]> create view project_managers as select e.empNo, e.fname, e.lname, p.projName, w.hoursWorked from employee e, project p, department d, worksOn w where p.deptNo= d.deptNo and d.deptNo= e.deptNo and w.projNo = p.projNo;
+Query OK, 0 rows affected (0.028 sec)
+
+MariaDB [EmployeeManagementDB]> select * from project_managers;
++-------+-------+--------+-----------+--------------+
+| empNo | fname | lname  | projName  | hoursWorkded |
++-------+-------+--------+-----------+--------------+
+|     1 | Alice | Smith  | SCCS      |            8 |
+|     1 | Alice | Smith  | SCCS      |            6 |
+|     2 | Bob   | Jones  | SCCS      |            8 |
+|     2 | Bob   | Jones  | SCCS      |            6 |
+|     3 | Carol | White  | Payroll   |            7 |
+|     3 | Carol | White  | Payroll   |            5 |
+|     4 | David | Brown  | Payroll   |            7 |
+|     4 | David | Brown  | Payroll   |            5 |
+|     5 | Emma  | Taylor | BudgetApp |            8 |
+|     5 | Emma  | Taylor | BudgetApp |            4 |
+|     6 | Frank | Davis  | BudgetApp |            8 |
+|     6 | Frank | Davis  | BudgetApp |            4 |
+|     7 | Grace | Wilson | SCCS      |            8 |
+|     7 | Grace | Wilson | SCCS      |            6 |
+|     8 | Henry | Moore  | Payroll   |            7 |
+|     8 | Henry | Moore  | Payroll   |            5 |
+|     9 | Isla  | Clark  | BudgetApp |            8 |
+|     9 | Isla  | Clark  | BudgetApp |            4 |
+|    10 | Jack  | Lewis  | SCCS      |            8 |
+|    10 | Jack  | Lewis  | SCCS      |            6 |
++-------+-------+--------+-----------+--------------+
+20 rows in set (0.003 sec)
+
+7.27
+MariaDB [EmployeeManagementDB]> create view EmpProject(empNo, projNo, totalHours) as select w.empNo, w.projNo, sum(hoursWorkded) from employee e, project p, worksOn w where e.empNo = w.empNo and p.projNo = w.projNo group by w.empNo, w.projNo;
+Query OK, 0 rows affected (0.030 sec)
+
+a)MariaDB [EmployeeManagementDB]> select * from EmpProject;
++-------+--------+------------+
+| empNo | projNo | totalHours |
++-------+--------+------------+
+|     1 |      1 |          8 |
+|     2 |      1 |          6 |
+|     3 |      2 |          7 |
+|     4 |      2 |          5 |
+|     5 |      3 |          8 |
+|     6 |      3 |          4 |
+|     7 |      4 |          6 |
+|     8 |      5 |          7 |
+|     9 |      6 |          8 |
+|    10 |      7 |          5 |
++-------+--------+------------+
+10 rows in set (0.003 sec)
+
+b)MariaDB [EmployeeManagementDB]> select projNo from EmpProject where projNo= 'SCCS';
+Empty set, 1 warning (0.023 sec)
+
+c)MariaDB [EmployeeManagementDB]> select count(projNo) from EmpProject where empNo = 1;
++---------------+
+| count(projNo) |
++---------------+
+|             1 |
++---------------+
+1 row in set (0.001 sec)
+
+d)MariaDB [EmployeeManagementDB]> select empNo, totalHours from empProject group by empNo;
++-------+------------+
+| empNo | totalHours |
++-------+------------+
+|     1 |          8 |
+|     2 |          6 |
+|     3 |          7 |
+|     4 |          5 |
+|     5 |          8 |
+|     6 |          4 |
+|     7 |          6 |
+|     8 |          7 |
+|     9 |          8 |
+|    10 |          5 |
++-------+------------+
+10 rows in set (0.001 sec)
+
+
+7.28
+When a new row is inserted, the view can be maintained directly without
+checking the Part table. If the new row has a partCost > 1000 and its partNo 
+is not already in the view, then it is added, otherwise, no changes are necessary.
+For delete and update, I would check the base table first doing anything to the view
+becauase the same partNo may appear in other rows, due to the distinct used. 
